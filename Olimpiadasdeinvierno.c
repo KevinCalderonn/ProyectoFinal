@@ -1721,7 +1721,7 @@ void crear_equipo() {
 
     // Inserción
     snprintf(query, sizeof(query),
-             "INSERT INTO equipo (id_equipo, nombre, id_federacion) VALUES ('%s', '%s', %d)",
+             "INSERT INTO equipo (id_equipo, nombre_equipo, id_federacion) VALUES ('%s', '%s', %d)",
              id_equipo, nombre, id_federacion);
 
     if (mysql_query(conn, query)) {
@@ -1743,10 +1743,10 @@ void leer_equipos() {
     MYSQL_RES *result;
     MYSQL_ROW row;
 
-    const char* query = "SELECT e.id_equipo, e.nombre, f.nombre AS federacion "
+    const char* query = "SELECT e.id_equipo, e.nombre_equipo, f.nombre AS federacion "
                         "FROM equipo e "
                         "LEFT JOIN federacion f ON e.id_federacion = f.id "
-                        "ORDER BY e.nombre";
+                        "ORDER BY e.nombre_equipo";
 
     if (mysql_query(conn, query)) {
         setcolor(1);
@@ -1882,7 +1882,7 @@ void actualizar_equipo() {
 
     // Actualizar
     snprintf(query, sizeof(query),
-             "UPDATE equipo SET nombre='%s', id_federacion=%d WHERE id_equipo='%s'",
+             "UPDATE equipo SET nombre_equipo='%s', id_federacion=%d WHERE id_equipo='%s'",
              nombre, id_federacion, id_equipo);
 
     if (mysql_query(conn, query)) {
