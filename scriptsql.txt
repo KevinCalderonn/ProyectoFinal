@@ -1,0 +1,110 @@
+DROP DATABASE IF EXISTS olimpiadas_invierno;
+CREATE DATABASE olimpiadas_invierno DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+USE olimpiadas_invierno;
+
+CREATE TABLE federacion (
+  id INT NOT NULL,
+  nombre VARCHAR(100) NOT NULL,
+  num_federados INT,
+  PRIMARY KEY (id)
+) ENGINE=InnoDB;
+
+CREATE TABLE estacion (
+  codigo VARCHAR(20) NOT NULL,
+  nombre VARCHAR(100),
+  direccion VARCHAR(150),
+  telefono VARCHAR(20),
+  km_esquiables DECIMAL(5,2),
+  personas_contacto VARCHAR(150),
+  PRIMARY KEY (codigo)
+) ENGINE=InnoDB;
+
+CREATE TABLE equipo (
+  id_equipo INT NOT NULL,
+  nombre_equipo VARCHAR(100),
+  entrenador VARCHAR(100),
+  PRIMARY KEY (id_equipo)
+) ENGINE=InnoDB;
+
+CREATE TABLE equipo_participante (
+  id_equipo INT NOT NULL,
+  nombre_esquiadores TEXT,
+  numero_esquiadores INT CHECK (numero_esquiadores >= 1),
+  PRIMARY KEY (id_equipo),
+  FOREIGN KEY (id_equipo) REFERENCES equipo(id_equipo) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE esquiador (
+  dni VARCHAR(20) NOT NULL,
+  nombre VARCHAR(100),
+  edad INT CHECK (edad >= 5),
+  id_federacion INT,
+  PRIMARY KEY (dni),
+  FOREIGN KEY (id_federacion) REFERENCES federacion(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE pista (
+  identificador VARCHAR(20) NOT NULL,
+  codigo_estacion VARCHAR(20) NOT NULL,
+  km_longitud DECIMAL(4,2) CHECK (km_longitud > 0),
+  grado_dificultad ENUM('azul', 'verde', 'roja', 'negra'),
+  PRIMARY KEY (codigo_estacion, identificador),
+  FOREIGN KEY (codigo_estacion) REFERENCES estacion(codigo) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE administra (
+  id_federacion INT NOT NULL,
+  codigo_estacion VARCHAR(20) NOT NULL,
+  PRIMARY KEY (id_federacion, codigo_estacion),
+  FOREIGN KEY (id_federacion) REFERENCES federacion(id) ON DELETE CASCADE,
+  FOREIGN KEY (codigo_estacion) REFERENCES estacion(codigo) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE entra (
+  dni VARCHAR(20) NOT NULL,
+  id_equipo INT DEFAULT NULL,
+  PRIMARY KEY (dni),
+  FOREIGN KEY (dni) REFERENCES esquiador(dni) ON DELETE CASCADE,
+  FOREIGN KEY (id_equipo) REFERENCES equipo_participante(id_equipo) ON DELETE SET NULL
+) ENGINE=InnoDB;
+
+CREATE TABLE prueba (
+  id_prueba INT NOT NULL,
+  nombre VARCHAR(100),
+  tipo ENUM('fondo', 'slalom', 'salto') NOT NULL,
+  participante_vencedor_tipo ENUM('equipo', 'individual'),
+  participante_vencedor_id VARCHAR(50),
+  tiempo_empleado_participantevencedor TIME,
+  PRIMARY KEY (id_prueba)
+) ENGINE=InnoDB;
+
+CREATE TABLE jornada (
+  id_prueba INT NOT NULL,
+  num_jornada INT NOT NULL,
+  fecha_jornada DATE,
+  jornadas_totales INT,
+  duracion TIME,
+  PRIMARY KEY (id_prueba, num_jornada),
+  FOREIGN KEY (id_prueba) REFERENCES prueba(id_prueba) ON DELETE CASCADE,
+  CHECK (jornadas_totales IS NULL OR num_jornada <= jornadas_totales)
+) ENGINE=InnoDB;
+
+CREATE TABLE participa (
+  id_prueba INT NOT NULL,
+  tipo_participante ENUM('individual', 'equipo') NOT NULL,
+  id_participante VARCHAR(50) NOT NULL,
+  fecha DATE NOT NULL,
+  tiempo_empleado TIME,
+  posicion INT CHECK (posicion IS NULL OR posicion >= 1),
+  PRIMARY KEY (id_prueba, tipo_participante, id_participante, fecha),
+  FOREIGN KEY (id_prueba) REFERENCES prueba(id_prueba) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE realizan (
+  id_prueba INT NOT NULL,
+  codigo_estacion VARCHAR(20) NOT NULL,
+  identificador VARCHAR(20) NOT NULL,
+  PRIMARY KEY (id_prueba, codigo_estacion, identificador),
+  FOREIGN KEY (id_prueba) REFERENCES prueba(id_prueba) ON DELETE CASCADE,
+  FOREIGN KEY (codigo_estacion, identificador) REFERENCES pista(codigo_estacion, identificador) ON DELETE CASCADE
+) ENGINE=InnoDB;
